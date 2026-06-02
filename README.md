@@ -1,1 +1,1 @@
-Please refer to [Lab09_tutorial.pdf](Lab09_tutorial.pdf) to complete the setup.
+Please refer to [tutorial.pdf](tutorial.pdf) to complete the setup.
