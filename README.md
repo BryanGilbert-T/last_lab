@@ -1,1 +1,1 @@
-Please refer to [tutorial.pdf](tutorial.pdf) to complete the setup.
+Please refer to [tutorial.pdf](https://nthu-datalab.github.io/ss/slides/2026-ss/Lab11_tutorial.pdf) to complete the setup.
