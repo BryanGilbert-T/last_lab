@@ -39,10 +39,10 @@ class User {
       email: map['email'],
       name: map['name'],
       avatarUrl: map['avatarUrl'],
-      logInMethods: (map['logInMethods'] as List<dynamic>)
+      logInMethods: ((map['logInMethods'] as List<dynamic>?) ?? [])
           .map((logInMethod) => LogInMethod.values.byName(logInMethod))
           .toList(),
-      isModerator: map['isModerator'],
+      isModerator: map['isModerator'] == true,
     );
   }
 

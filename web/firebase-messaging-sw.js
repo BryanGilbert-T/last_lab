@@ -1,13 +1,14 @@
 importScripts("https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js");
 importScripts("https://www.gstatic.com/firebasejs/8.6.1/firebase-messaging.js");
 
+
 firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
-  appId: "YOUR_APP_ID",
-  messagingSenderId: "YUR_MESSAGING_SENDER_ID",
-  projectId: "YOUR_PROJECT_ID",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  storageBucket: "YOUR_STORAGE_BUCKET",
+    apiKey: "AIzaSyAawOvKsHwBHHc_FhoofahQUP3UHxPs-EU",
+    authDomain: "lastlab-d3e87.firebaseapp.com",
+    projectId: "lastlab-d3e87",
+    storageBucket: "lastlab-d3e87.firebasestorage.app",
+    messagingSenderId: "840925341590",
+    appId: "1:840925341590:web:43075dac1be168f1a31fb7"
   // measurementId: "YOUR_MEASUREMENT_ID",
 });
 

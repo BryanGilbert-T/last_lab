@@ -44,11 +44,23 @@ final routerConfig = GoRouter(
 
             // Log out and ask user to log in again for the custom claim to take effect
             if (meViewModel.isModeratorStatusChanged) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Provider.of<PushMessagingService>(context, listen: false)
-                    .unsubscribeFromAllTopics();
-                Provider.of<AuthenticationService>(context, listen: false)
-                    .logOut();
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                final pushMessagingService =
+                    Provider.of<PushMessagingService>(context, listen: false);
+                final authenticationService =
+                    Provider.of<AuthenticationService>(context, listen: false);
+
+                try {
+                  await pushMessagingService.unsubscribeFromAllTopics();
+                } catch (e) {
+                  debugPrint('Error unsubscribing from push topics: $e');
+                }
+
+                try {
+                  await authenticationService.logOut();
+                } catch (e) {
+                  debugPrint('Error logging out: $e');
+                }
               });
             }
 
@@ -71,7 +83,7 @@ final routerConfig = GoRouter(
                   );
                 }
 
-                return ChatPage();
+                return const ChatPage();
               },
             ));
           },

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class MessageBubble extends StatelessWidget {
   // Create a message bubble which is meant to be the first in the sequence.
-  MessageBubble.withUser({
+  const MessageBubble.withUser({
     super.key,
     required this.userAvatarUrl,
     required this.userName,
@@ -13,7 +13,7 @@ class MessageBubble extends StatelessWidget {
   });
 
   // Create a amessage bubble that continues the sequence.
-  MessageBubble({
+  const MessageBubble({
     super.key,
     required this.text,
     required this.isMine,
@@ -36,7 +36,7 @@ class MessageBubble extends StatelessWidget {
   final bool isMine;
 
   // Callback to delete the message.
-  Function()? onDelete;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {

@@ -29,6 +29,7 @@ class _ChatPageState extends State<ChatPage> {
       topics: ['chat'],
     ).catchError((e) {
       debugPrint('Error initializing push messaging service: $e');
+      return false;
     });
   }
 
@@ -46,11 +47,23 @@ class _ChatPageState extends State<ChatPage> {
         title: const Text('Group Chat'),
         actions: [
           IconButton(
-            onPressed: () {
-              Provider.of<PushMessagingService>(context, listen: false)
-                  .unsubscribeFromAllTopics();
-              Provider.of<AuthenticationService>(context, listen: false)
-                  .logOut();
+            onPressed: () async {
+              final pushMessagingService =
+                  Provider.of<PushMessagingService>(context, listen: false);
+              final authenticationService =
+                  Provider.of<AuthenticationService>(context, listen: false);
+
+              try {
+                await pushMessagingService.unsubscribeFromAllTopics();
+              } catch (e) {
+                debugPrint('Error unsubscribing from push topics: $e');
+              }
+
+              try {
+                await authenticationService.logOut();
+              } catch (e) {
+                debugPrint('Error logging out: $e');
+              }
             },
             icon: Icon(
               Icons.exit_to_app,

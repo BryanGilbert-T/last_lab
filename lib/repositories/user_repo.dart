@@ -18,10 +18,9 @@ class UserRepository {
 
   Future<void> createOrUpdateUser(User user) async {
     Map<String, dynamic> userMap = user.toMap();
-    await _db
-        .collection('apps/group-chat/users')
-        .doc(user.id)
-        .set(userMap); // write to local cache immediately
+    userMap.remove('isModerator');
+    await _db.collection('apps/group-chat/users').doc(user.id).set(
+        userMap, SetOptions(merge: true)); // write to local cache immediately
   }
 
   Future<User?> getUserByEmail(String email) async {
@@ -36,7 +35,7 @@ class UserRepository {
         querySnapshot.docs.first.id);
   }
 
-    /// Registers/updates the device notification token for a user.
+  /// Registers/updates the device notification token for a user.
   Future<void> updateFcmToken(String userId, String token) async {
     await _db
         .collection('apps/group-chat/users')
@@ -71,5 +70,4 @@ class UserRepository {
       'logoutHistory': FieldValue.arrayUnion([Timestamp.now()]),
     }, SetOptions(merge: true));
   }
-
 }

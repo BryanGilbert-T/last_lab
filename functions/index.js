@@ -1,4 +1,5 @@
 const { logger, https } = require("firebase-functions/v2");
+const { HttpsError } = require("firebase-functions/v2/https");
 
 const admin = require("firebase-admin");
 const { FieldValue } = require("firebase-admin/firestore");
@@ -7,7 +8,6 @@ const {
   onDocumentDeleted,
   onDocumentUpdated,
 } = require("firebase-functions/v2/firestore");
-const { user } = require("firebase-functions/v1/auth");
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -17,7 +17,7 @@ const db = admin.firestore();
 // Subscribe a client to a topic. This is useful for web clients that can't subscribe to topics directly. By default, callable functions have CORS configured to allow requests from all origins. You can follow this link: https://firebase.google.com/docs/functions/callable?gen=2nd#cors to configure your own CORS rules.
 exports.groupChatAppSubscribeToTopic = https.onCall(async (request) => {
   const { token, topic } = request.data;
-  const uid = request.auth.uid;
+  const uid = request.auth?.uid;
 
   if (!uid) {
     logger.error(
@@ -45,7 +45,7 @@ exports.groupChatAppSubscribeToTopic = https.onCall(async (request) => {
 
 exports.groupChatAppUnsubscribeFromTopic = https.onCall(async (request) => {
   const { token, topic } = request.data;
-  const uid = request.auth.uid;
+  const uid = request.auth?.uid;
 
   if (!uid) {
     logger.error(
@@ -73,7 +73,7 @@ exports.groupChatAppUnsubscribeFromTopic = https.onCall(async (request) => {
 exports.groupChatAppPushMessage = onDocumentCreated(
   {
     document: "apps/group-chat/messages/{messageId}",
-    region: "asia-east",
+    region: "asia-east1",
   },
   async (event) => {
     const messageId = event.params.messageId;
@@ -131,13 +131,23 @@ exports.groupChatAppSetModeratorCustomClaim = onDocumentUpdated(
   },
   async (event) => {
     const userId = event.params.userId;
-    const userData = event.data.after.data();
+    const beforeData = event.data.before.data() ?? {};
+    const afterData = event.data.after.data() ?? {};
+    const beforeIsModerator = beforeData["isModerator"] === true;
+    const afterIsModerator = afterData["isModerator"] === true;
+
+    if (beforeIsModerator === afterIsModerator) {
+      logger.debug(
+        "groupChatAppSetModeratorCustomClaim: isModerator did not change, skipping"
+      );
+      return;
+    }
 
     // No idempoency check needed here as the logic of this function is idempotent
     try {
       // The custom claim is available in the user's ID token only after the next sign-in
       await admin.auth().setCustomUserClaims(userId, {
-        isModerator: userData["isModerator"],
+        isModerator: afterIsModerator,
       });
     } catch (error) {
       logger.error(
@@ -155,13 +165,14 @@ exports.groupChatAppSetModeratorCustomClaim = onDocumentUpdated(
 exports.groupChatAppNotifyMessageDeleted = onDocumentDeleted(
   {
     document: "apps/group-chat/messages/{messageId}",
-    region: "asia-east",
+    region: "asia-east1",
   },
   async (event) => {
     const messageId = event.params.messageId;
     const idempotencyRef = db.doc(
       `apps/group-chat/idempotencyKeys/${event.id}`
     );
+    let notification = null;
 
     try {
       await db.runTransaction(async (transaction) => {
@@ -174,25 +185,27 @@ exports.groupChatAppNotifyMessageDeleted = onDocumentDeleted(
         }
 
         const deletedMessage = event.data.data();
+        const deletedText = deletedMessage["text"] ?? "";
         const authorId = deletedMessage["userId"];
+        if (!authorId) {
+          logger.info(
+            "groupChatAppNotifyMessageDeleted: Deleted message has no author, skipping notification"
+          );
+          transaction.set(idempotencyRef, {
+            processedAt: FieldValue.serverTimestamp(),
+          });
+          return;
+        }
 
         const authorRef = db.doc(`apps/group-chat/users/${authorId}`);
         const authorDoc = await transaction.get(authorRef);
         const token = authorDoc.exists ? authorDoc.data()["fcmToken"] : null;
 
         if (token) {
-          await admin.messaging().send({
-            notification: {
-              title: "Your message was removed",
-              body: `A moderator removed your message: "${deletedMessage["text"]}"`,
-            },
-            data: {
-              function: "groupChatAppNotifyMessageDeleted",
-              messageId: messageId,
-              text: deletedMessage["text"] ?? "",
-            },
+          notification = {
             token: token,
-          });
+            deletedText: deletedText,
+          };
         } else {
           logger.info(
             "groupChatAppNotifyMessageDeleted: No device token for author, skipping notification"
@@ -203,6 +216,22 @@ exports.groupChatAppNotifyMessageDeleted = onDocumentDeleted(
           processedAt: FieldValue.serverTimestamp(),
         });
       });
+
+      if (notification) {
+        await admin.messaging().send({
+          notification: {
+            title: "Your message was deleted by a moderator",
+            body: `"${notification.deletedText}"`,
+          },
+          data: {
+            function: "groupChatAppNotifyMessageDeleted",
+            messageId: messageId,
+            text: notification.deletedText,
+          },
+          token: notification.token,
+        });
+      }
+
       logger.debug(
         "groupChatAppNotifyMessageDeleted: Event processed successfully"
       );

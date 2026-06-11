@@ -55,7 +55,7 @@ class _NewMessageBarState extends State<NewMessageBar> {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceVariant,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 16, right: 8, bottom: 16),

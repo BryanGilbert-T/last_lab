@@ -30,10 +30,13 @@ class MeViewModel with ChangeNotifier {
       }
 
       _meStreamController.add(me);
-      if (_me != null) {
-        // Skip the first time when `_me` is null
-        _isModeratorStatusChanged = _lastIsModerator != me.isModerator;
+      if (_me == null) {
         _lastIsModerator = me.isModerator;
+      } else {
+        _isModeratorStatusChanged = _lastIsModerator != me.isModerator;
+        if (_isModeratorStatusChanged) {
+          _lastIsModerator = me.isModerator;
+        }
       }
       _me = me;
 
