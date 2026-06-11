@@ -1,0 +1,36 @@
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "lastlab-d3e87",
+          "configurations": {
+            "android": "1:840925341590:android:e9e2a78b5f999ae4a31fb7",
+            "ios": "1:840925341590:ios:a8bf8842b4311dfea31fb7",
+            "web": "1:840925341590:web:43075dac1be168f1a31fb7"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-east1",
+    "rules": "firestore/firestore.rules",
+    "indexes": "firestore/firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

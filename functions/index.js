@@ -73,7 +73,7 @@ exports.groupChatAppUnsubscribeFromTopic = https.onCall(async (request) => {
 exports.groupChatAppPushMessage = onDocumentCreated(
   {
     document: "apps/group-chat/messages/{messageId}",
-    region: "us-west1",
+    region: "asia-east",
   },
   async (event) => {
     const messageId = event.params.messageId;
@@ -127,7 +127,7 @@ exports.groupChatAppPushMessage = onDocumentCreated(
 exports.groupChatAppSetModeratorCustomClaim = onDocumentUpdated(
   {
     document: "apps/group-chat/users/{userId}",
-    region: "us-west1",
+    region: "asia-east1",
   },
   async (event) => {
     const userId = event.params.userId;
