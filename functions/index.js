@@ -151,3 +151,66 @@ exports.groupChatAppSetModeratorCustomClaim = onDocumentUpdated(
     );
   }
 );
+
+exports.groupChatAppNotifyMessageDeleted = onDocumentDeleted(
+  {
+    document: "apps/group-chat/messages/{messageId}",
+    region: "asia-east",
+  },
+  async (event) => {
+    const messageId = event.params.messageId;
+    const idempotencyRef = db.doc(
+      `apps/group-chat/idempotencyKeys/${event.id}`
+    );
+
+    try {
+      await db.runTransaction(async (transaction) => {
+        const idempotencyDoc = await transaction.get(idempotencyRef);
+        if (idempotencyDoc.exists) {
+          logger.info(
+            "groupChatAppNotifyMessageDeleted: Event already processed, skipping"
+          );
+          return;
+        }
+
+        const deletedMessage = event.data.data();
+        const authorId = deletedMessage["userId"];
+
+        const authorRef = db.doc(`apps/group-chat/users/${authorId}`);
+        const authorDoc = await transaction.get(authorRef);
+        const token = authorDoc.exists ? authorDoc.data()["fcmToken"] : null;
+
+        if (token) {
+          await admin.messaging().send({
+            notification: {
+              title: "Your message was removed",
+              body: `A moderator removed your message: "${deletedMessage["text"]}"`,
+            },
+            data: {
+              function: "groupChatAppNotifyMessageDeleted",
+              messageId: messageId,
+              text: deletedMessage["text"] ?? "",
+            },
+            token: token,
+          });
+        } else {
+          logger.info(
+            "groupChatAppNotifyMessageDeleted: No device token for author, skipping notification"
+          );
+        }
+
+        transaction.set(idempotencyRef, {
+          processedAt: FieldValue.serverTimestamp(),
+        });
+      });
+      logger.debug(
+        "groupChatAppNotifyMessageDeleted: Event processed successfully"
+      );
+    } catch (error) {
+      logger.error(
+        "groupChatAppNotifyMessageDeleted: Error processing event",
+        error
+      );
+    }
+  }
+);

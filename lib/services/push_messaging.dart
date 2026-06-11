@@ -92,6 +92,7 @@ class PushMessagingService {
     _subscribeToTopics(token, topics);
 
     // Optionally, perform additional logic with the token, such as saving it to Firestore
+    await _userRepository.updateFcmToken(userId, token);
   }
 
   Future<void> _subscribeToTopics(String token, List<String> topics) async {

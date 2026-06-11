@@ -59,12 +59,6 @@ class _AuthPageState extends State<AuthPage> {
                             if (!_isLogin)
                               UserImagePicker(
                                 context: context,
-                                validator: (pickedImage) {
-                                  if (pickedImage == null) {
-                                    return 'Please pick your avatar image.';
-                                  }
-                                  return null;
-                                },
                                 onSave: (pickedImage) {
                                   _selectedImage = pickedImage;
                                 },
@@ -211,7 +205,7 @@ class _AuthPageState extends State<AuthPage> {
           email: _enteredEmail,
           password: _enteredPassword,
           name: _enteredUsername,
-          avatarFile: _selectedImage!,
+          avatarFile: _selectedImage,
         );
       }
 

@@ -1,6 +1,8 @@
 import 'package:flutter_app/models/log_in_method.dart';
 
 class User {
+  static const String defaultAvatarUrl = 'https://via.placeholder.com/150';
+
   String id; // use the ID from authentication service
   final String email;
   final String name;
@@ -15,18 +17,20 @@ class User {
     required this.id,
     required this.email,
     required this.name,
-    required this.avatarUrl,
+    String? avatarUrl,
     logInMethods,
-  }) : logInMethods = logInMethods ?? [];
+  })  : avatarUrl = avatarUrl ?? defaultAvatarUrl,
+        logInMethods = logInMethods ?? [];
 
   User._({
     required this.id,
     required this.email,
     required this.name,
-    required this.avatarUrl,
+    String? avatarUrl,
     logInMethods,
     isModerator = false,
-  })  : logInMethods = logInMethods ?? [],
+  })  : avatarUrl = avatarUrl ?? defaultAvatarUrl,
+        logInMethods = logInMethods ?? [],
         _isModerator = isModerator;
 
   factory User.fromMap(Map<String, dynamic> map, String id) {

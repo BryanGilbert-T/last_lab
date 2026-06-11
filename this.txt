@@ -1,0 +1,9 @@
+file changed:
+1. firestore/firestore.rules
+2. functions/index.js
+3. lib/models/user.dart
+4. lib/repositories/user_repo.dart
+5. lib/services/authentication.dart
+6. lib/services/push_messaging.dart
+7. lib/view_models/me_vm.dart
+8. lib/views/chat_page.dart

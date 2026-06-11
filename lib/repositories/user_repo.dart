@@ -35,4 +35,41 @@ class UserRepository {
     return User.fromMap(querySnapshot.docs.first.data() as Map<String, dynamic>,
         querySnapshot.docs.first.id);
   }
+
+    /// Registers/updates the device notification token for a user.
+  Future<void> updateFcmToken(String userId, String token) async {
+    await _db
+        .collection('apps/group-chat/users')
+        .doc(userId)
+        .set({'fcmToken': token}, SetOptions(merge: true));
+  }
+
+  /// Removes the device notification token so no further notifications are
+  /// delivered to a logged-out session.
+  Future<void> removeFcmToken(String userId) async {
+    await _db
+        .collection('apps/group-chat/users')
+        .doc(userId)
+        .set({'fcmToken': FieldValue.delete()}, SetOptions(merge: true));
+  }
+
+  /// Updates the user's online presence and last seen time.
+  Future<void> updatePresence(String userId, bool isOnline) async {
+    await _db.collection('apps/group-chat/users').doc(userId).set({
+      'isOnline': isOnline,
+      'lastSeen': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  /// Records logout activity: marks the user offline, updates last seen and
+  /// keeps a history of logout times.
+  Future<void> recordLogout(String userId) async {
+    await _db.collection('apps/group-chat/users').doc(userId).set({
+      'isOnline': false,
+      'lastSeen': FieldValue.serverTimestamp(),
+      'lastLogoutAt': FieldValue.serverTimestamp(),
+      'logoutHistory': FieldValue.arrayUnion([Timestamp.now()]),
+    }, SetOptions(merge: true));
+  }
+
 }

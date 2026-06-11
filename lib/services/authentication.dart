@@ -23,7 +23,7 @@ class AuthenticationService {
       required String email,
       required String password,
       required String name,
-      required XFile avatarFile}) async {
+      XFile? avatarFile}) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -113,7 +113,6 @@ class AuthenticationService {
     }
   }
 
-  /// Param `avatarUrl` and `avatarFile` cannot be both `null`.
   Future<void> _postSingUp({
     required String userId,
     required String email,
@@ -141,7 +140,7 @@ class AuthenticationService {
       id: userId,
       email: email,
       name: name,
-      avatarUrl: avatarUrl!,
+      avatarUrl: avatarUrl,
       logInMethods: logInMethods,
     ));
   }
@@ -263,7 +262,7 @@ class AuthenticationService {
           userId: user.uid,
           email: googleEmail,
           name: googleUser.displayName ?? googleEmail.split('@').first,
-          avatarUrl: googleUser.photoUrl ?? 'https://via.placeholder.com/150',
+          avatarUrl: googleUser.photoUrl,
           logInMethods: [LogInMethod.google],
         );
         debugPrint('New Google account created');
@@ -367,10 +366,14 @@ class AuthenticationService {
   }
 
   Future<void> logOut() async {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId != null) {
+      await _userRepository.recordLogout(userId);
+      await _userRepository.removeFcmToken(userId);
+    }
     await _firebaseAuth.signOut();
   }
 
-  /// Returns the user ID or `null` if the user is not logged in.
   String? checkAndGetLoggedInUserId() {
     User? user = _firebaseAuth.currentUser;
     if (user == null) return null;

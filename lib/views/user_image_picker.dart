@@ -7,7 +7,7 @@ class UserImagePicker extends FormField<XFile?> {
   UserImagePicker({
     super.key,
     required void Function(XFile? pickedImage) onSave,
-    required String? Function(XFile? pickedImage) super.validator,
+    String? Function(XFile? pickedImage)? super.validator,
     required BuildContext context,
   }) : super(
           onSaved: onSave,
